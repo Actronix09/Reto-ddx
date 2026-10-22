@@ -10,3 +10,6 @@ reporte/*.toc
 reporte/*.out
 reporte/*.fls
 reporte/*.fdb_latexmk
+
+# Entorno virtual
+.venv/

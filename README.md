@@ -17,6 +17,8 @@ source .venv/bin/activate        # en Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+Instala `matplotlib`, `numpy` y `pandas` para los mapas, y `streamlit` para la interfaz.
+
 Los datos del reto deben estar en la carpeta `RETO_ddx_MINUTO_90_completo/` junto al script;
 el script lee la base `RETO_ddx_MINUTO_90_completo/sql/minuto_90.sqlite`. Si está en otro lado,
 usa `--db ruta/a/minuto_90.sqlite`.
@@ -93,9 +95,10 @@ python heatmap_goles.py --partido 3869685 --salida final.png
 
 ## Cómo funciona
 
-1. **Lectura de datos.** Consulta la tabla `eventos_tiros` de la base SQLite y, si se pide un
-   partido, la tabla `partidos` para el título (equipos, marcador y fase). Sin `--tiros`,
-   solo toma las filas con `gol = 1`.
+1. **Lectura de datos.** `cargar_datos()` lee una sola vez todos los tiros de `eventos_tiros`
+   y la tabla `partidos` (equipos, marcador, fase y fecha). Después se filtra en memoria según
+   la selección y el partido elegidos; sin `--tiros`, solo quedan las filas con `gol = 1`. En la
+   interfaz esta lectura queda en caché, así que cambiar de partido no vuelve a abrir la base.
 2. **Coordenadas.** Los datos son de StatsBomb: cancha de 120 × 80, y cada evento viene
    orientado hacia el ataque del equipo que lo hace (`x = 120` es la portería rival). La
    cancha se dibuja en esas mismas unidades, así que cada gol cae en su lugar exacto respecto
@@ -129,10 +132,25 @@ Todo está al inicio de `heatmap_goles.py`:
 - `sigma` en `densidad_kde()`: qué tan anchas son las manchas.
 - `bins` en `densidad_zonas()`: tamaño de la cuadrícula.
 
+## Reporte
+
+El reporte técnico está en `reporte/reporte.tex` (compilado en `reporte/reporte.pdf`). Sus
+figuras se generan con el propio script y se guardan en `reporte/figuras/`. Para regenerarlas
+y volver a compilar:
+
+```bash
+python heatmap_goles.py --partido 3869685 --salida reporte/figuras/final_goles.pdf
+python heatmap_goles.py --partido 3869685 --tiros --salida reporte/figuras/final_tiros.pdf
+python heatmap_goles.py --seleccion Argentina --salida reporte/figuras/argentina_torneo.pdf
+python heatmap_goles.py --salida reporte/figuras/torneo_kde.pdf
+python heatmap_goles.py --modo zonas --salida reporte/figuras/torneo_zonas.pdf
+cd reporte && latexmk -pdf reporte.tex
+```
+
 ## Detalles de los datos a tener en cuenta
 
 - **Los autogoles no aparecen**, porque no son tiros. Cuando el marcador del partido suma más
-  goles de los que hay en `eventos_tiros`, el script lo avisa en la terminal. Pasa en
+  goles de los que hay en `eventos_tiros`, se avisa en la terminal y en la interfaz. Pasa en
   Canada–Morocco, Costa Rica–Germany y Argentina–Australia.
 - **El minuto empieza en 0**, como en StatsBomb: un gol del minuto 80 de la transmisión
   aparece como `79'`.

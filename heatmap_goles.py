@@ -301,8 +301,9 @@ def mapa_de_calor(capas: list[Capa], titulo: str, unidad: str, modo: str = "kde"
         maximo = max(z.max() for _, _, z in densidades)
         for capa, (gx, gy, z) in zip(capas, densidades):
             if len(capa.datos):
+                # rasterized evita las líneas de costura entre celdas al guardar en PDF/SVG
                 ax.pcolormesh(gx, gy, z / maximo, cmap=rampa(capa.color), vmin=0.05, vmax=1,
-                              shading="auto", zorder=1)
+                              shading="auto", zorder=1, rasterized=True)
 
     # Ubicación exacta de cada tiro encima del mapa (en zonas ya se ve el conteo)
     solo_goles = unidad == "goles"

@@ -39,10 +39,12 @@
 \begin{abstract}
 Este reporte describe un sistema en Python que genera mapas de calor de goles y tiros
 a partir de los datos de eventos del Mundial Qatar 2022 (StatsBomb Open Data).
-El sistema lee la base SQLite del reto, transforma las coordenadas de cada tiro,
-estima su densidad sobre la cancha y produce figuras listas para presentación,
-ya sea de un partido o del torneo completo. Se documentan los datos, la arquitectura,
-los métodos de estimación, el uso y los primeros resultados.
+El sistema lee la base SQLite del reto, orienta los tiros de cada equipo hacia la
+portería que ataca, estima su densidad y dibuja a los dos equipos sobre la misma
+cancha, cada uno con los colores de su selección. Puede mostrar un partido, el torneo
+de una selección contra todos sus rivales o el torneo completo, y se usa desde la línea
+de comandos o desde una interfaz web en Streamlit. Se documentan los datos, la
+arquitectura, los métodos, el uso y los primeros resultados.
 \end{abstract}
 
 \tableofcontents
@@ -52,8 +54,8 @@ los métodos de estimación, el uso y los primeros resultados.
 
 El reto pregunta \emph{qué pasa con los jugadores cuando el partido se decide}.
 Un primer paso para responderla es ver \textbf{desde dónde} se anotan los goles:
-qué zonas de la cancha concentran la definición, cómo cambia eso entre equipos
-y en qué momento del partido ocurren. El sistema convierte la tabla de tiros
+qué zonas de la cancha concentran la definición, cómo se comparan dos equipos en un
+mismo partido y en qué momento ocurren los goles. El sistema convierte la tabla de tiros
 en un mapa de calor que responde la primera parte de forma visual y reproducible.
 
 % ---------------------------------------------------------------------------
@@ -76,8 +78,8 @@ y \texttt{estado\_marcador}.
 \toprule
 Tabla & Una fila es & Filas & Uso en el sistema \\
 \midrule
-\texttt{eventos\_tiros} & un tiro & 1\,453 & posición, minuto, equipo, resultado \\
-\texttt{partidos}       & un partido & 64 & equipos, marcador y fase para el título \\
+\texttt{eventos\_tiros} & un tiro & 1\,453 & posición, minuto, equipo, rival, resultado \\
+\texttt{partidos}       & un partido & 64 & equipos, marcador, fase y fecha \\
 \bottomrule
 \end{tabular}
 \caption{Tablas de la base que consulta el sistema. Se unen por \texttt{match\_id}.}
@@ -101,7 +103,8 @@ $y = 18$ a $62$; el punto penal está en $(108, 40)$.
   \item \textbf{Autogoles.} No son tiros, por lo que no aparecen en \texttt{eventos\_tiros}.
     La tabla registra 169 goles, mientras que la suma de marcadores en \texttt{partidos}
     es 172. Los tres faltantes son autogoles (Canada--Morocco, Costa Rica--Germany
-    y Argentina--Australia). El sistema avisa cuando detecta esta diferencia.
+    y Argentina--Australia). El sistema avisa cuando detecta esta diferencia, tanto en
+    la terminal como en la interfaz.
   \item \textbf{Minuto.} Sigue la convención de StatsBomb y empieza en 0: un gol
     del minuto 80 de la transmisión se registra como 79.
   \item \textbf{Tandas de penales.} No están incluidas en la tabla de tiros, por lo
@@ -113,21 +116,35 @@ $y = 18$ a $62$; el punto penal está en $(108, 40)$.
 % ---------------------------------------------------------------------------
 \section{Arquitectura del sistema}
 
-El sistema es un solo script, \texttt{heatmap\_goles.py}, que depende de
-\texttt{pandas}, \texttt{numpy} y \texttt{matplotlib}. El flujo es lineal:
+El sistema tiene dos archivos:
+
+\begin{itemize}
+  \item \texttt{heatmap\_goles.py}: el núcleo. Carga los datos, calcula las densidades,
+    dibuja la figura y ofrece la línea de comandos.
+  \item \texttt{app.py}: la interfaz web en Streamlit. No repite lógica: importa las
+    funciones del núcleo y solo agrega los selectores y el botón de descarga.
+\end{itemize}
+
+Las dependencias son \texttt{pandas}, \texttt{numpy}, \texttt{matplotlib} y
+\texttt{streamlit}. El flujo es lineal:
 
 \begin{enumerate}
-  \item \textbf{Consulta.} \texttt{cargar\_tiros()} lee los tiros (o solo los goles)
-    de un partido o del torneo; \texttt{cargar\_partido()} lee los datos del partido.
-  \item \textbf{Transformación.} Se invierte el eje $Y$ (StatsBomb lo mide hacia abajo)
-    y, cuando ambos equipos comparten la cancha, \texttt{reflejar()} gira 180° los tiros
-    del visitante.
-  \item \textbf{Densidad.} \texttt{densidad\_kde()} o \texttt{densidad\_zonas()} calculan
-    la superficie a colorear.
-  \item \textbf{Dibujo.} \texttt{dibujar\_cancha()} traza las líneas y
-    \texttt{mapa\_de\_calor()} superpone la densidad, los tiros, las etiquetas y la
-    barra de color.
-  \item \textbf{Salida.} La figura se muestra en pantalla o se guarda en PNG, SVG o PDF.
+  \item \textbf{Carga.} \texttt{cargar\_datos()} lee una sola vez todos los tiros del torneo
+    y la tabla de partidos, e invierte el eje $Y$ (StatsBomb lo mide hacia abajo). En la
+    interfaz este resultado queda en caché, así que cambiar de selección o de partido no
+    vuelve a leer la base.
+  \item \textbf{Selección de capas.} \texttt{construir\_figura()} filtra los tiros según
+    lo elegido y los reparte en \emph{capas}: una por equipo, cada una con su nombre, sus
+    datos, su color y hacia qué lado ataca.
+  \item \textbf{Colores.} \texttt{colores\_enfrentamiento()} asigna a cada capa el color de
+    su selección y garantiza que los dos se distingan.
+  \item \textbf{Orientación.} Cuando hay dos capas en la misma cancha, \texttt{reflejar()}
+    gira 180° la segunda para que ataque hacia la izquierda.
+  \item \textbf{Densidad y dibujo.} \texttt{mapa\_de\_calor()} calcula la densidad de cada
+    capa con \texttt{densidad\_kde()} o \texttt{densidad\_zonas()}, la pinta sobre la cancha
+    de \texttt{dibujar\_cancha()} y agrega tiros, minutos y rótulos.
+  \item \textbf{Salida.} La figura se muestra en pantalla, se guarda en PNG, SVG o PDF, o se
+    muestra en el navegador con opción de descargarla.
 \end{enumerate}
 
 \begin{table}[H]
@@ -136,16 +153,21 @@ El sistema es un solo script, \texttt{heatmap\_goles.py}, que depende de
 \toprule
 Función & Responsabilidad \\
 \midrule
-\texttt{listar\_partidos()}   & Imprime los 64 partidos con su \texttt{match\_id} \\
-\texttt{cargar\_partido()}    & Fila de \texttt{partidos} para un \texttt{match\_id} \\
-\texttt{cargar\_tiros()}      & Tiros o goles de un partido o del torneo \\
-\texttt{densidad\_kde()}      & Densidad suavizada con kernel gaussiano \\
-\texttt{densidad\_zonas()}    & Conteo en una cuadrícula de $12 \times 8$ \\
-\texttt{dibujar\_cancha()}    & Líneas de la cancha en unidades StatsBomb \\
-\texttt{mapa\_de\_calor()}    & Figura completa de un conjunto de tiros \\
-\texttt{reflejar()}           & Giro de 180° para el equipo visitante \\
-\texttt{graficar\_partido()}  & Vista de partido: una cancha o un panel por equipo \\
-\texttt{avisar\_autogoles()}  & Compara goles registrados contra el marcador \\
+\texttt{cargar\_datos()}            & Tiros del torneo y tabla de partidos \\
+\texttt{selecciones()}              & Lista ordenada de las 32 selecciones \\
+\texttt{partidos\_de()}             & Partidos de una selección, en orden cronológico \\
+\texttt{nombre\_partido()}          & Texto ``Local $a$-$b$ Visitante'' \\
+\texttt{listar\_partidos()}         & Tabla de partidos con su \texttt{match\_id} \\
+\texttt{aviso\_autogoles()}         & Compara goles registrados contra el marcador \\
+\texttt{distancia\_color()}         & Distancia perceptual aproximada entre dos colores \\
+\texttt{colores\_enfrentamiento()}  & Colores distinguibles para dos equipos \\
+\texttt{rampa()}                    & Escala de transparente al color del equipo \\
+\texttt{densidad\_kde()}            & Densidad suavizada con kernel gaussiano \\
+\texttt{densidad\_zonas()}          & Conteo en una cuadrícula de $12 \times 8$ \\
+\texttt{reflejar()}                 & Giro de 180° para la capa que ataca a la izquierda \\
+\texttt{dibujar\_cancha()}          & Cancha negra con líneas blancas, en unidades StatsBomb \\
+\texttt{mapa\_de\_calor()}          & Dibuja una o dos capas sobre la misma cancha \\
+\texttt{construir\_figura()}        & Decide la vista y arma la figura completa \\
 \bottomrule
 \end{tabular}
 \caption{Funciones principales de \texttt{heatmap\_goles.py}.}
@@ -154,18 +176,41 @@ Función & Responsabilidad \\
 % ---------------------------------------------------------------------------
 \section{Metodología}
 
+\subsection{Vistas}
+
+\texttt{construir\_figura()} produce tres vistas según lo que se elija:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Elección & Capa a la derecha & Capa a la izquierda \\
+\midrule
+Un partido               & selección elegida, o el local & su rival \\
+Una selección, sin partido & la selección (todo su torneo) & todos sus rivales juntos \\
+Nada                     & todos los equipos & --- \\
+\bottomrule
+\end{tabular}
+\caption{Vistas del sistema.}
+\end{table}
+
+Con la opción \emph{un panel por equipo}, en lugar de girar a la segunda capa se dibuja
+cada una en su propia cancha, ambas atacando hacia la derecha.
+
 \subsection{Densidad suavizada (modo \texttt{kde})}
 
 Para cada punto $(x, y)$ de una malla con resolución de $0.5$ yardas se suma una
-campana gaussiana centrada en cada tiro $(x_i, y_i)$:
+campana gaussiana centrada en cada tiro $(x_i, y_i)$ de la capa $k$:
 \begin{equation}
-  z(x, y) = \sum_{i=1}^{n} \exp\!\left( -\frac{(x - x_i)^2 + (y - y_i)^2}{2\sigma^2} \right),
+  z_k(x, y) = \sum_{i=1}^{n_k} \exp\!\left( -\frac{(x - x_i)^2 + (y - y_i)^2}{2\sigma^2} \right),
   \qquad \sigma = 6 \text{ yardas}.
 \end{equation}
-Después se normaliza, $\hat z = z / \max z$, de modo que la escala va de 0 a 1 y
-representa \emph{concentración relativa} dentro del mismo mapa; por eso la barra de
-color se rotula ``Baja'' y ``Alta'' en lugar de un número absoluto. Los valores por
-debajo de $0.05$ se dejan transparentes para que la cancha se siga viendo.
+Después se normalizan todas las capas con el \textbf{mismo} máximo:
+\begin{equation}
+  \hat z_k = \frac{z_k}{\max_{j} \max_{x,y} z_j(x, y)},
+\end{equation}
+de modo que la escala va de 0 a 1 y es común a los dos equipos: el que tiró más, o más
+concentrado, se ve más intenso. Los valores por debajo de $0.05$ se dejan transparentes.
 
 Se eligió un $\sigma$ generoso porque un partido suele tener entre 2 y 6 goles:
 con un kernel estrecho cada gol sería una mancha aislada y el mapa no mostraría
@@ -174,44 +219,80 @@ zonas. La implementación es directa en \texttt{numpy}, sin depender de \texttt{
 \subsection{Conteo por zonas (modo \texttt{zonas})}
 
 La cancha se divide en una cuadrícula de $12 \times 8$ celdas de $10 \times 10$ yardas y
-se cuenta cuántos tiros caen en cada una (histograma 2D). Cada celda con al menos un
-tiro muestra su conteo. Este modo es mejor cuando hay muchos goles, como en el torneo
+se cuenta cuántos tiros de cada capa caen en cada una (histograma 2D). Cada celda con al
+menos un tiro muestra su conteo; si las dos capas tienen tiros en la misma celda, se
+muestra como $a/b$. Este modo es mejor cuando hay muchos goles, como en el torneo
 completo, porque los números se pueden leer y comparar directamente.
 
 \subsection{Orientación de los equipos}
 
-En los datos ambos equipos atacan hacia $x = 120$. En la vista de un partido, el local
-conserva su orientación y al visitante se le aplica $(x, y) \mapsto (120 - x,\ 80 - y)$,
-de modo que cada equipo ataca una portería distinta y los dos caben en la misma cancha.
-Con la opción \texttt{--por-equipo} no se gira a nadie: cada selección tiene su panel
-atacando hacia la derecha, lo que facilita compararlas.
+En los datos ambos equipos atacan hacia $x = 120$. A la segunda capa se le aplica
+$(x, y) \mapsto (120 - x,\ 80 - y)$, de modo que cada equipo ataca una portería distinta
+y los dos caben en la misma cancha. Debajo de la cancha se rotula, en el color de cada
+equipo, su nombre, cuántos goles o tiros tiene y hacia dónde ataca.
 
-\subsection{Codificación visual}
+\subsection{Colores por selección}
+
+Cada selección tiene un color principal y uno alterno en \texttt{COLORES\_EQUIPO}, aclarados
+para que se vean sobre negro; se evita el blanco porque se confunde con las líneas. Para
+decidir si dos colores se distinguen se usa la distancia \emph{redmean}, una aproximación
+barata a la percepción humana sobre los canales RGB en escala 0--255:
+\begin{equation}
+  d = \sqrt{\left(2 + \tfrac{\bar r}{256}\right)\Delta r^2 + 4\,\Delta g^2
+            + \left(2 + \tfrac{255 - \bar r}{256}\right)\Delta b^2},
+  \qquad \bar r = \tfrac{r_1 + r_2}{2}.
+\end{equation}
+El equipo de la derecha conserva su color principal. Para el rival se prueba su principal,
+luego su alterno y luego una lista de respaldo (\texttt{RESPALDO}), y se toma el primero con
+$d \geq 200$ (\texttt{UMBRAL\_COLOR}). En la final, por ejemplo, el azul de Francia se
+parece demasiado al celeste de Argentina, así que Francia aparece en rojo.
+
+Cada capa se pinta con una rampa que va de transparente al color del equipo y se aclara en
+las zonas más densas, de modo que las zonas sin tiros dejan ver la cancha y las dos
+manchas pueden superponerse sin taparse.
+
+\subsection{Elementos de la figura}
 
 \begin{itemize}
-  \item Rampa secuencial de un solo tono (azul claro a oscuro): más oscuro significa más
-    concentración. No se usa un arcoíris, que exagera diferencias pequeñas.
-  \item Los goles se marcan como puntos negros con borde claro; con \texttt{--tiros}, los
-    tiros fallados aparecen como círculos grises con relleno claro.
-  \item Cada gol lleva su minuto. Los goles anotados desde el mismo punto (p.\ ej.\ penales)
-    comparten una sola etiqueta. Con más de 15 goles no se escriben minutos.
+  \item Cancha negra con líneas blancas, sobre un fondo gris muy oscuro.
+  \item Los goles se marcan como puntos rellenos del color del equipo con borde blanco; con
+    la opción de tiros, los tiros sin gol aparecen como círculos huecos del mismo color.
+  \item Cada gol lleva su minuto, con un contorno negro para que se lea sobre la mancha.
+    Los goles anotados desde el mismo punto (p.\ ej.\ penales) comparten una sola etiqueta.
+    Con más de 15 goles no se escriben minutos.
+  \item Una leyenda central explica qué significa la intensidad o el número de cada zona.
   \item Cada figura incluye el crédito ``Datos: StatsBomb Open Data''.
 \end{itemize}
 
 % ---------------------------------------------------------------------------
 \section{Uso}
 
-Instalación:
+\subsection{Instalación}
+
 \begin{lstlisting}
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 \end{lstlisting}
 
-Ejemplos:
+\subsection{Interfaz web}
+
+\begin{lstlisting}
+streamlit run app.py
+\end{lstlisting}
+
+Se abre en el navegador con una barra lateral para elegir la selección (``Todas'' o una de
+las 32), el partido (la lista se reduce a los de la selección elegida), si se muestran solo
+goles o todos los tiros, el estilo (mancha o zonas) y si se separan los equipos en dos
+paneles. El botón \emph{Descargar PNG} guarda la imagen que se está viendo.
+
+\subsection{Línea de comandos}
+
 \begin{lstlisting}
 python heatmap_goles.py --listar                        # ids de los partidos
+python heatmap_goles.py --listar --seleccion Argentina  # solo los de Argentina
 python heatmap_goles.py --partido 3869685               # goles de la final
+python heatmap_goles.py --seleccion Argentina           # su torneo contra sus rivales
 python heatmap_goles.py --partido 3869685 --por-equipo  # un panel por equipo
 python heatmap_goles.py --partido 3869685 --tiros       # todos los tiros
 python heatmap_goles.py --modo zonas                    # todo el torneo
@@ -224,13 +305,14 @@ python heatmap_goles.py --partido 3869685 --salida final.pdf
 \toprule
 Opción & Efecto \\
 \midrule
-\texttt{--listar}          & Lista los partidos con \texttt{match\_id}, fecha, fase y marcador. \\
-\texttt{--partido ID}      & Partido a graficar; si se omite, todo el torneo. \\
-\texttt{--modo kde|zonas}  & Mancha suavizada (por defecto) o conteo por cuadrícula. \\
-\texttt{--por-equipo}      & Un panel por selección. \\
-\texttt{--tiros}           & Incluye todos los tiros, no solo los goles. \\
-\texttt{--salida ARCHIVO}  & Guarda la figura (PNG, SVG o PDF) en lugar de mostrarla. \\
-\texttt{--db RUTA}         & Ruta alternativa a \texttt{minuto\_90.sqlite}. \\
+\texttt{--listar}           & Lista los partidos con \texttt{match\_id}, fecha, fase y marcador. \\
+\texttt{--partido ID}       & Partido a graficar; si se omite, todo el torneo. \\
+\texttt{--seleccion NOMBRE} & Selección (en inglés). Sin partido, muestra todo su torneo; con partido, la pone a la derecha. \\
+\texttt{--modo kde|zonas}   & Mancha suavizada (por defecto) o conteo por cuadrícula. \\
+\texttt{--por-equipo}       & Un panel por equipo. \\
+\texttt{--tiros}            & Incluye todos los tiros, no solo los goles. \\
+\texttt{--salida ARCHIVO}   & Guarda la figura (PNG, SVG o PDF) en lugar de mostrarla. \\
+\texttt{--db RUTA}          & Ruta alternativa a \texttt{minuto\_90.sqlite}. \\
 \bottomrule
 \end{tabular}
 \caption{Opciones de línea de comandos.}
@@ -241,27 +323,43 @@ Opción & Efecto \\
 
 \subsection{Caso: la final Argentina 3--3 France}
 
-La figura~\ref{fig:final} muestra los seis goles de la final en una sola cancha.
-Los de Argentina se reparten dentro del área, incluido el penal de Messi en el
-minuto 22 (registrado como 22'). Dos de los tres goles de Francia salieron del
-punto penal (79' y 117'), por lo que comparten etiqueta.
+La figura~\ref{fig:final} muestra los seis goles de la final en una sola cancha:
+Argentina en celeste atacando a la derecha y Francia en rojo atacando a la izquierda.
+Los goles de Argentina se reparten dentro del área, incluido el penal de Messi
+(registrado como 22'). Dos de los tres goles de Francia salieron del punto penal
+(79' y 117'), por lo que comparten etiqueta.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\linewidth]{final_goles.pdf}
-  \caption{Goles de la final. Argentina ataca a la derecha y Francia a la izquierda.}
+  \caption{Goles de la final.}
   \label{fig:final}
 \end{figure}
 
 La figura~\ref{fig:final-tiros} agrega todos los tiros del partido. Argentina remató
-20 veces y Francia 10; la mancha de Argentina es más amplia y se extiende fuera del
-área, mientras que la de Francia se concentra en el borde del área.
+20 veces y Francia 10. Como las dos manchas comparten escala, la de Argentina es más
+intensa y más amplia, y se extiende fuera del área; la de Francia se concentra en el
+borde del área.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.85\linewidth]{final_tiros_equipo.pdf}
-  \caption{Tiros de la final por equipo. Puntos negros: goles; círculos claros: tiros sin gol.}
+  \includegraphics[width=\linewidth]{final_tiros.pdf}
+  \caption{Tiros de la final. Puntos rellenos: goles; círculos huecos: tiros sin gol.}
   \label{fig:final-tiros}
+\end{figure}
+
+\subsection{Caso: el torneo de Argentina}
+
+La vista de selección enfrenta todo el torneo de un equipo contra todos sus rivales juntos
+(figura~\ref{fig:argentina}). En sus 7 partidos, Argentina hizo 101 tiros y 15 goles
+(13.9 de xG), 4 de ellos de penal; sus rivales le hicieron 45 tiros y 7 goles (4.2 de xG).
+El octavo gol en contra fue un autogol ante Australia, que por eso no aparece en el mapa.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{argentina_torneo.pdf}
+  \caption{Goles de Argentina (derecha) y de sus rivales (izquierda) en todo el torneo.}
+  \label{fig:argentina}
 \end{figure}
 
 \subsection{Torneo completo}
@@ -336,8 +434,12 @@ Prórroga   & 4 \\
 
 \begin{itemize}
   \item Los autogoles no se pueden ubicar porque no hay tiro asociado.
-  \item La densidad está normalizada por figura, así que dos mapas no son comparables en
-    intensidad absoluta; para comparar equipos conviene el modo \texttt{zonas}.
+  \item La escala de la mancha es común a los dos equipos de una figura, pero no entre
+    figuras distintas: dos partidos no son comparables en intensidad absoluta. Para eso
+    conviene el modo \texttt{zonas}, que muestra conteos.
+  \item Los colores de \texttt{COLORES\_EQUIPO} se ajustaron a mano para verse sobre negro;
+    la distancia \emph{redmean} es una aproximación y no garantiza que se distingan con
+    daltonismo.
   \item Pendiente: filtrar por \texttt{tramo} y \texttt{estado\_marcador} para responder
     directamente cómo cambia la definición en el cierre del partido o cuando se va perdiendo.
   \item Pendiente: ponderar la densidad por \texttt{xg} para mapear calidad de las ocasiones
