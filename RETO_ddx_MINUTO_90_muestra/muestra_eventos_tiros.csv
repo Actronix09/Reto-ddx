@@ -1,0 +1,21 @@
+﻿match_id,periodo,minuto,segundo,tramo,equipo,rival,marcador_equipo,marcador_rival,estado_marcador,jugador,jugador_id,posicion,x,y,bajo_presion,xg,resultado,gol,parte_cuerpo,tecnica,tipo_tiro,x_fin,y_fin,patron_juego
+3869685,1,4,40,00-15,Argentina,France,0,0,Empatando,Alexis Mac Allister,27886,Left Center Midfield,92.4,30.0,False,0.0245,Saved,False,Right Foot,Normal,Open Play,117.3,38.3,Regular Play
+3869685,1,7,36,00-15,Argentina,France,0,0,Empatando,Rodrigo Javier De Paul,7797,Right Center Midfield,99.2,47.9,False,0.0628,Blocked,False,Right Foot,Normal,Open Play,108.1,40.4,Regular Play
+3869685,1,16,15,15-30,Argentina,France,0,0,Empatando,Ángel Fabián Di María Hernández,2995,Left Wing,103.1,34.6,False,0.1068,Off T,False,Right Foot,Normal,Open Play,120.0,39.6,Regular Play
+3869685,1,22,24,15-30,Argentina,France,0,0,Empatando,Lionel Andrés Messi Cuccittini,5503,Right Wing,108.0,40.0,False,0.7835,Goal,True,Left Foot,Normal,Penalty,120.0,41.8,Other
+3869685,1,31,35,30-45,Argentina,France,1,0,Ganando,Alexis Mac Allister,27886,Left Center Midfield,94.3,23.5,False,0.0106,Wayward,False,Right Foot,Half Volley,Open Play,112.3,80.0,Regular Play
+3869685,1,35,22,30-45,Argentina,France,1,0,Ganando,Ángel Fabián Di María Hernández,2995,Left Wing,111.8,32.1,False,0.3034,Goal,True,Left Foot,Normal,Open Play,120.0,41.7,From Counter
+3869685,2,48,49,45-60,Argentina,France,2,0,Ganando,Rodrigo Javier De Paul,7797,Right Center Midfield,103.3,52.3,False,0.0402,Saved,False,Right Foot,Volley,Open Play,117.6,41.6,From Throw In
+3869685,2,58,21,45-60,Argentina,France,2,0,Ganando,Julián Álvarez,29560,Center Forward,110.5,24.9,False,0.0595,Saved,False,Left Foot,Normal,Open Play,119.4,35.8,From Free Kick
+3869685,2,59,51,45-60,Argentina,France,2,0,Ganando,Lionel Andrés Messi Cuccittini,5503,Right Wing,109.7,46.0,False,0.1156,Off T,False,Right Foot,Normal,Open Play,120.0,45.5,Regular Play
+3869685,2,67,15,60-75,France,Argentina,0,2,Perdiendo,Randal Kolo Muani,22097,Right Wing,113.4,34.6,True,0.0962,Off T,False,Head,Normal,Open Play,120.0,31.5,From Corner
+3869685,2,70,9,60-75,France,Argentina,0,2,Perdiendo,Kylian Mbappé Lottin,3009,Left Wing,102.5,27.9,False,0.0506,Off T,False,Right Foot,Normal,Open Play,120.0,38.8,Regular Play
+3869685,2,71,31,60-75,Argentina,France,2,0,Ganando,Enzo Fernandez,38718,Center Defensive Midfield,98.9,32.2,False,0.0416,Saved,False,Right Foot,Normal,Open Play,117.8,40.4,From Goal Kick
+3869685,2,79,24,75-90+,France,Argentina,0,2,Perdiendo,Kylian Mbappé Lottin,3009,Left Center Forward,108.0,40.0,False,0.7835,Goal,True,Right Foot,Normal,Penalty,120.0,37.3,Other
+3869685,2,80,59,75-90+,France,Argentina,1,2,Perdiendo,Kylian Mbappé Lottin,3009,Left Center Forward,104.8,30.1,False,0.1017,Goal,True,Right Foot,Volley,Open Play,120.0,41.5,From Throw In
+3869685,2,83,23,75-90+,Argentina,France,2,2,Empatando,Enzo Fernandez,38718,Center Defensive Midfield,92.2,35.9,False,0.0302,Blocked,False,Right Foot,Normal,Open Play,101.8,38.1,From Throw In
+3869685,2,92,57,75-90+,France,Argentina,2,2,Empatando,Kylian Mbappé Lottin,3009,Left Center Forward,95.9,32.2,False,0.0324,Blocked,False,Right Foot,Normal,Open Play,100.7,33.5,From Counter
+3869685,2,93,45,75-90+,France,Argentina,2,2,Empatando,Adrien Rabiot,3026,Left Defensive Midfield,108.9,28.5,False,0.0933,Saved,False,Left Foot,Normal,Open Play,118.0,36.6,From Corner
+3869685,2,96,37,75-90+,Argentina,France,2,2,Empatando,Lionel Andrés Messi Cuccittini,5503,Right Wing,96.2,40.9,False,0.043,Saved,False,Left Foot,Normal,Open Play,117.6,39.3,Regular Play
+3869685,3,92,5,Prórroga,Argentina,France,2,2,Empatando,Alexis Mac Allister,27886,Left Center Midfield,98.2,23.8,False,0.0193,Off T,False,Right Foot,Half Volley,Open Play,120.0,28.0,From Free Kick
+3869685,3,99,54,Prórroga,France,Argentina,2,2,Empatando,Youssouf Fofana,11990,Left Defensive Midfield,89.8,39.9,False,0.023,Blocked,False,Right Foot,Normal,Open Play,103.3,40.4,From Free Kick

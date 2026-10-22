@@ -1,0 +1,6 @@
+﻿game_id,season_id,competition_id,competition_stage,game_day,game_date,home_team_id,away_team_id,home_score,away_score,venue,referee,match_id,home_team,away_team
+3857276,106,43,Group Stage,3,2022-12-01 15:00:00,1833,788,1,2,Al Thumama Stadium,Raphael Claus,3857276,Canada,Morocco
+3857271,106,43,Group Stage,1,2022-11-21 13:00:00,768,797,6,2,Sheikh Khalifa International Stadium,Raphael Claus,3857271,England,Iran
+3857296,106,43,Group Stage,3,2022-12-01 15:00:00,785,782,0,0,Ahmad bin Ali Stadium,Anthony Taylor,3857296,Croatia,Belgium
+3857274,106,43,Group Stage,2,2022-11-25 16:00:00,941,3565,1,1,Sheikh Khalifa International Stadium,Mustapha Ghorbal,3857274,Netherlands,Ecuador
+3857255,106,43,Group Stage,3,2022-12-01 19:00:00,778,772,2,1,Sheikh Khalifa International Stadium,Victor Miguel de Freitas Gomes,3857255,Japan,Spain

@@ -1,0 +1,31 @@
+﻿match_id,periodo,minuto,segundo,tramo,equipo,rival,marcador_equipo,marcador_rival,estado_marcador,jugador,jugador_id,posicion,x,y,bajo_presion,accion
+3869685,1,0,0,00-15,France,Argentina,0,0,Empatando,Antoine Griezmann,5487,Center Attacking Midfield,61.0,40.1,False,Pass
+3869685,1,3,42,00-15,Argentina,France,0,0,Empatando,Enzo Fernandez,38718,Center Defensive Midfield,54.4,37.8,False,Ball Receipt*
+3869685,1,5,42,00-15,France,Argentina,0,0,Empatando,Theo Bernard François Hernández,6704,Left Back,45.8,32.3,False,Ball Receipt*
+3869685,1,11,16,00-15,Argentina,France,0,0,Empatando,Cristian Gabriel Romero,20572,Right Center Back,35.6,30.7,False,Ball Recovery
+3869685,1,13,49,00-15,Argentina,France,0,0,Empatando,Lionel Andrés Messi Cuccittini,5503,Right Wing,87.1,51.9,False,Ball Receipt*
+3869685,1,17,10,15-30,France,Argentina,0,0,Empatando,Raphaël Varane,5485,Right Center Back,38.5,59.8,False,Pass
+3869685,1,20,28,15-30,Argentina,France,0,0,Empatando,Nicolás Hernán Otamendi,3090,Left Center Back,65.9,33.9,False,Ball Receipt*
+3869685,1,26,49,15-30,France,Argentina,0,1,Perdiendo,Olivier Giroud,3604,Center Forward,106.4,33.5,True,Duel
+3869685,1,32,7,30-45,France,Argentina,0,1,Perdiendo,Dayotchanculle Upamecano,8519,Left Center Back,19.7,15.1,False,Pressure
+3869685,1,34,8,30-45,Argentina,France,1,0,Ganando,Lionel Andrés Messi Cuccittini,5503,Right Wing,76.0,62.4,False,Ball Receipt*
+3869685,1,37,34,30-45,Argentina,France,2,0,Ganando,Enzo Fernandez,38718,Center Defensive Midfield,38.8,44.9,False,Carry
+3869685,1,39,43,30-45,Argentina,France,2,0,Ganando,Cristian Gabriel Romero,20572,Right Center Back,32.6,60.9,True,Pass
+3869685,1,43,52,30-45,France,Argentina,0,2,Perdiendo,Raphaël Varane,5485,Right Center Back,40.5,51.7,False,Ball Receipt*
+3869685,1,46,27,45+ (1T),France,Argentina,0,2,Perdiendo,Marcus Thuram,2972,Left Wing,99.7,10.9,True,Carry
+3869685,1,50,41,45+ (1T),France,Argentina,0,2,Perdiendo,Antoine Griezmann,5487,Center Attacking Midfield,39.0,70.1,True,Carry
+3869685,2,47,5,45-60,France,Argentina,0,2,Perdiendo,Raphaël Varane,5485,Right Center Back,39.0,42.9,False,Pass
+3869685,2,49,38,45-60,Argentina,France,2,0,Ganando,Rodrigo Javier De Paul,7797,Right Center Midfield,65.1,64.6,True,Duel
+3869685,2,53,59,45-60,France,Argentina,0,2,Perdiendo,Aurélien Djani Tchouaméni,10481,Right Defensive Midfield,77.5,22.2,False,Ball Recovery
+3869685,2,58,46,45-60,France,Argentina,0,2,Perdiendo,Raphaël Varane,5485,Right Center Back,44.3,37.2,False,Ball Receipt*
+3869685,2,62,56,60-75,France,Argentina,0,2,Perdiendo,Theo Bernard François Hernández,6704,Left Back,61.2,7.8,False,Pass
+3869685,2,66,8,60-75,France,Argentina,0,2,Perdiendo,Jules Koundé,4445,Right Back,105.5,76.1,False,Carry
+3869685,2,68,40,60-75,France,Argentina,0,2,Perdiendo,Marcus Thuram,2972,Center Forward,77.9,57.7,True,Dribble
+3869685,2,71,51,60-75,France,Argentina,0,2,Perdiendo,Eduardo Camavinga,24778,Left Back,58.0,5.7,True,Dribble
+3869685,2,75,50,75-90+,France,Argentina,0,2,Perdiendo,Marcus Thuram,2972,Left Midfield,54.6,18.5,False,Carry
+3869685,2,80,3,75-90+,Argentina,France,2,1,Ganando,Marcos Javier Acuña,19597,Left Wing,51.4,4.9,False,Ball Receipt*
+3869685,2,83,48,75-90+,Argentina,France,2,2,Empatando,Enzo Fernandez,38718,Center Defensive Midfield,55.4,63.1,False,Carry
+3869685,2,90,0,75-90+,France,Argentina,2,2,Empatando,Jules Koundé,4445,Right Back,70.4,59.8,True,Pass
+3869685,2,95,1,75-90+,France,Argentina,2,2,Empatando,Kylian Mbappé Lottin,3009,Left Center Forward,44.8,2.7,True,Carry
+3869685,2,45,0,45-60,France,Argentina,2,2,Empatando,Eduardo Camavinga,24778,Left Back,23.8,47.8,False,Ball Receipt*
+3869685,3,93,19,Prórroga,France,Argentina,2,2,Empatando,Jules Koundé,4445,Right Back,52.0,74.8,False,Ball Receipt*

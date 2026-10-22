@@ -1,0 +1,5 @@
+matplotlib
+numpy
+pandas
+# Solo si la base no es SQLite (PostgreSQL, MySQL, SQL Server...)
+sqlalchemy

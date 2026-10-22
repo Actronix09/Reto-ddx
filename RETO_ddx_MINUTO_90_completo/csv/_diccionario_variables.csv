@@ -1,0 +1,176 @@
+﻿tabla,variable,tipo,descripcion,ejemplo,pct_nulos
+partidos,game_id,numérico,ID del partido (igual a match_id),3857276,0.0
+partidos,season_id,numérico,ID de temporada en la fuente (106 = Qatar 2022),106,0.0
+partidos,competition_id,numérico,ID de competición en la fuente (43 = Copa del Mundo),43,0.0
+partidos,competition_stage,texto,"Fase: grupos, octavos, cuartos, semis, final",Group Stage,0.0
+partidos,game_day,numérico,Jornada o ronda,3,0.0
+partidos,game_date,texto,Fecha y hora (hora local de Qatar),2022-12-01 15:00:00,0.0
+partidos,home_team_id,numérico,ID del equipo local,1833,0.0
+partidos,away_team_id,numérico,ID del equipo visitante,788,0.0
+partidos,home_score,numérico,"Goles del equipo local (tiempo regular + prórroga, sin penales)",1,0.0
+partidos,away_score,numérico,Goles del visitante (sin penales),2,0.0
+partidos,venue,texto,Estadio,Al Thumama Stadium,0.0
+partidos,referee,texto,Árbitro,Raphael Claus,1.6
+partidos,match_id,numérico,"ID del partido, llave para unir con el resto de tablas",3857276,0.0
+partidos,home_team,texto,Equipo local,Canada,0.0
+partidos,away_team,texto,Equipo visitante,Morocco,0.0
+jugador_partido,player_id,numérico,ID del jugador,3233,0.0
+jugador_partido,player,texto,Nombre del jugador,Raheem Sterling,0.0
+jugador_partido,team,texto,Selección,England,0.0
+jugador_partido,position_group,texto,"Grupo de posición: GK portero, CB central, FB lateral, CDM contención, CM medio, CAM mediapunta, W extremo, ST delantero",W,0.0
+jugador_partido,match_id,numérico,ID del partido,3857272,0.0
+jugador_partido,xg,numérico,Goles esperados: probabilidad sumada de que sus tiros fueran gol,0.0,0.0
+jugador_partido,goals,numérico,Goles,0.0,0.0
+jugador_partido,shots_total,numérico,Tiros,0.0,0.0
+jugador_partido,xa,numérico,Asistencias esperadas: xG de los tiros que generó con su pase,0.0,0.0
+jugador_partido,key_passes,numérico,Pases que terminan en tiro,0.0,0.0
+jugador_partido,progressive_passes,numérico,Pases que avanzan el balón de forma significativa hacia la portería rival,2.0,0.0
+jugador_partido,progressive_carries,numérico,Conducciones que avanzan de forma significativa,2.0,0.0
+jugador_partido,pressures,numérico,Presiones al rival con balón,9.0,0.0
+jugador_partido,tackles_won,numérico,Entradas ganadas,0.0,0.0
+jugador_partido,interceptions,numérico,Intercepciones,0.0,0.0
+jugador_partido,clearances,numérico,Despejes,0.0,0.0
+jugador_partido,minutes,numérico,Minutos jugados,68.0,0.0
+jugador_torneo,player_id,numérico,ID del jugador,2941.0,0.0
+jugador_torneo,player,texto,Nombre del jugador,Ismaïla Sarr,0.0
+jugador_torneo,team,texto,Selección,Senegal,0.0
+jugador_torneo,shots,numérico,Tiros,10.0,0.0
+jugador_torneo,xg,numérico,Goles esperados: probabilidad sumada de que sus tiros fueran gol,1.848790219,0.0
+jugador_torneo,goals,numérico,Goles,1.0,0.0
+jugador_torneo,shots_on_target,numérico,Tiros a puerta,1.0,0.0
+jugador_torneo,xa,numérico,Asistencias esperadas: xG de los tiros que generó con su pase,0.2702264475,0.0
+jugador_torneo,key_passes,numérico,Pases que terminan en tiro,6.0,0.0
+jugador_torneo,goal_assists,numérico,Asistencias de gol,0.0,0.0
+jugador_torneo,passes_completed,numérico,Pases completados,57.0,0.0
+jugador_torneo,progressive_passes,numérico,Pases que avanzan el balón de forma significativa hacia la portería rival,9.0,0.0
+jugador_torneo,passes_into_final3rd,numérico,Pases al último tercio,1.0,0.0
+jugador_torneo,passes_into_box,numérico,Pases al área,10.0,0.0
+jugador_torneo,passes_attempted,numérico,Pases intentados,81.0,0.0
+jugador_torneo,progressive_carries,numérico,Conducciones que avanzan de forma significativa,18.0,0.0
+jugador_torneo,carries_into_final3rd,numérico,Conducciones al último tercio,9.0,0.0
+jugador_torneo,carries_into_box,numérico,Conducciones al área,16.0,0.0
+jugador_torneo,pressures,numérico,Presiones al rival con balón,51.0,0.0
+jugador_torneo,pressures_att3rd,numérico,Presiones en el último tercio,23.0,0.0
+jugador_torneo,duels_total,numérico,Duelos disputados,13.0,0.0
+jugador_torneo,tackles_won,numérico,Entradas ganadas,4.0,0.0
+jugador_torneo,interceptions,numérico,Intercepciones,3.0,0.0
+jugador_torneo,clearances,numérico,Despejes,1.0,0.0
+jugador_torneo,aerial_duels,numérico,Duelos aéreos,8.0,0.0
+jugador_torneo,minutes,numérico,Minutos jugados,359,0.0
+jugador_torneo,n_matches,numérico,Partidos jugados,4,0.0
+jugador_torneo,position_group,texto,"Grupo de posición: GK portero, CB central, FB lateral, CDM contención, CM medio, CAM mediapunta, W extremo, ST delantero",W,0.0
+jugador_torneo,pass_completion,numérico,Porcentaje de pases completados (0 a 1),0.7037037037037037,0.0
+jugador_torneo,duel_win_pct,numérico,Porcentaje de duelos ganados (0 a 1),0.3076923076923077,0.0
+jugador_torneo,xg_per90,numérico,xG por cada 90 minutos jugados,0.4634850131197772,0.0
+jugador_torneo,xa_per90,numérico,xA por cada 90 minutos jugados,0.0677447918523676,0.0
+jugador_torneo,goals_per90,numérico,Goles por cada 90 minutos jugados,0.2506963788300835,0.0
+jugador_torneo,shots_per90,numérico,Tiros por cada 90 minutos jugados,2.5069637883008355,0.0
+jugador_torneo,key_passes_per90,numérico,Pases a tiro por cada 90 minutos jugados,1.504178272980501,0.0
+jugador_torneo,prog_pass_per90,numérico,Pases progresivos por cada 90 minutos jugados,2.256267409470752,0.0
+jugador_torneo,prog_carry_per90,numérico,Conducciones progresivas por cada 90 minutos jugados,4.512534818941504,0.0
+jugador_torneo,pf3_per90,numérico,Pases al último tercio por cada 90 minutos jugados,0.2506963788300835,0.0
+jugador_torneo,cf3_per90,numérico,Conducciones al último tercio por cada 90 minutos jugados,2.256267409470752,0.0
+jugador_torneo,pbox_per90,numérico,Pases al área por cada 90 minutos jugados,2.5069637883008355,0.0
+jugador_torneo,cbox_per90,numérico,Conducciones al área por cada 90 minutos jugados,4.011142061281337,0.0
+jugador_torneo,pressures_per90,numérico,Presiones por cada 90 minutos jugados,12.785515320334262,0.0
+jugador_torneo,press_att3_per90,numérico,Presiones en último tercio por cada 90 minutos jugados,5.766016713091922,0.0
+jugador_torneo,tackles_per90,numérico,Entradas ganadas por cada 90 minutos jugados,1.0027855153203342,0.0
+jugador_torneo,interceptions_per90,numérico,Intercepciones por cada 90 minutos jugados,0.7520891364902507,0.0
+jugador_torneo,clearances_per90,numérico,Despejes por cada 90 minutos jugados,0.2506963788300835,0.0
+jugador_torneo,xg_delta,numérico,Goles menos xG (positivo = definió mejor de lo esperado),-0.8487902190000001,0.0
+jugador_torneo,avg_min_per_match,numérico,Minutos promedio por partido,89.75,0.0
+valor_jugador_far,player_id,numérico,ID del jugador,5503.0,0.0
+valor_jugador_far,offensive_value,numérico,Valor ofensivo VAEP: cuánto aumentaron sus acciones la probabilidad de anotar,3.9522928096462526,0.0
+valor_jugador_far,defensive_value,numérico,Valor defensivo VAEP: cuánto redujeron la probabilidad de recibir gol,-0.1593549308449837,0.0
+valor_jugador_far,vaep_value,numérico,Valor total VAEP = ofensivo + defensivo,3.792937878801269,0.0
+valor_jugador_far,player,texto,Nombre del jugador,Lionel Andrés Messi Cuccittini,0.0
+valor_jugador_far,team,texto,Selección,Argentina,0.0
+valor_jugador_far,position_group,texto,"Grupo de posición: GK portero, CB central, FB lateral, CDM contención, CM medio, CAM mediapunta, W extremo, ST delantero",ST,0.0
+valor_jugador_far,minutes,numérico,Minutos jugados,720,0.0
+valor_jugador_far,attack_far_per90,numérico,Valor de ataque por 90 minutos,0.4940366012057816,0.0
+valor_jugador_far,defense_far_per90,numérico,Valor de defensa por 90 minutos,-0.0199193663556229,0.0
+valor_jugador_far,possession_far_per90,numérico,Valor de posesión por 90 minutos,0.0,0.0
+valor_jugador_far,total_far,numérico,Valor total en el torneo,3.792937878801269,0.0
+valor_jugador_far,total_far_per90,numérico,Valor total por 90 minutos,0.4741172348501586,0.0
+valor_jugador_far,xg_per90,numérico,xG por cada 90 minutos jugados,0.949831153125,0.0
+valor_equipo_far,team,texto,Selección,Argentina,0.0
+valor_equipo_far,avg_atk_far,numérico,Valor de ataque promedio del plantel,0.0705229305214167,0.0
+valor_equipo_far,avg_def_far,numérico,Valor de defensa promedio del plantel,0.0146585736055195,0.0
+valor_equipo_far,total_team_far,numérico,Valor total sumado del plantel,14.324782741264254,0.0
+prediccion_mundial_2026,team,texto,Selección,Argentina,0.0
+prediccion_mundial_2026,p_r16,numérico,Probabilidad simulada de llegar a dieciseisavos/octavos,0.7876666666666666,0.0
+prediccion_mundial_2026,p_qf,numérico,Probabilidad simulada de llegar a cuartos,0.5976666666666667,0.0
+prediccion_mundial_2026,p_sf,numérico,Probabilidad simulada de llegar a semifinal,0.4276666666666666,0.0
+prediccion_mundial_2026,p_final,numérico,Probabilidad simulada de llegar a la final,0.278,0.0
+prediccion_mundial_2026,p_win,numérico,Probabilidad simulada de ser campeón,0.1806666666666666,0.0
+eventos_pases,match_id,numérico,ID del partido,3857254,0.0
+eventos_pases,periodo,numérico,"1 y 2 = tiempos regulares, 3 y 4 = prórroga (la tanda de penales no se incluye)",1,0.0
+eventos_pases,minuto,numérico,Minuto del partido (reloj corrido),0,0.0
+eventos_pases,segundo,numérico,Segundo dentro del minuto,0,0.0
+eventos_pases,tramo,texto,Bloque de 15 minutos; 75-90+ incluye el descuento,00-15,0.0
+eventos_pases,equipo,texto,Equipo que hace la acción,Denmark,0.0
+eventos_pases,rival,texto,Equipo rival,Tunisia,0.0
+eventos_pases,marcador_equipo,numérico,Goles del equipo justo antes de la acción,0,0.0
+eventos_pases,marcador_rival,numérico,Goles del rival justo antes de la acción,0,0.0
+eventos_pases,estado_marcador,texto,"Ganando, Empatando o Perdiendo en ese momento (desde la óptica del equipo)",Empatando,0.0
+eventos_pases,jugador,texto,Jugador que hace la acción,Kasper Dolberg,0.0
+eventos_pases,jugador_id,numérico,ID del jugador (une con las tablas de jugadores),6302,0.0
+eventos_pases,posicion,texto,Posición en la que jugaba en ese momento,Left Center Forward,0.0
+eventos_pases,x,numérico,"Posición horizontal en la cancha, 0 a 120 (0 = su propia portería, 120 = portería rival)",60.0,0.0
+eventos_pases,y,numérico,"Posición vertical, 0 a 80 (0 = banda izquierda vista desde su portería)",40.0,0.0
+eventos_pases,bajo_presion,verdadero/falso,Verdadero si el rival lo presionaba,False,0.0
+eventos_pases,receptor,texto,Jugador que recibe el pase,Christian Dannemann Eriksen,7.0
+eventos_pases,receptor_id,numérico,ID del receptor,3043.0,7.0
+eventos_pases,x_fin,numérico,"Dónde termina el balón (eje x, 0 a 120)",58.0,0.0
+eventos_pases,y_fin,numérico,"Dónde termina el balón (eje y, 0 a 80)",36.6,0.0
+eventos_pases,longitud,numérico,Longitud del pase (unidades de cancha ≈ yardas),3.94,0.0
+eventos_pases,altura,texto,"Raso, a media altura o elevado",Ground Pass,0.0
+eventos_pases,parte_cuerpo,texto,Parte del cuerpo,Right Foot,6.0
+eventos_pases,tipo_pase,texto,"Juego abierto, saque de banda, tiro de esquina, falta, saque inicial, etc.",Kick Off,0.0
+eventos_pases,completado,verdadero/falso,Verdadero si llegó a un compañero,True,0.0
+eventos_pases,resultado,texto,Resultado de la acción,Completo,0.0
+eventos_pases,asistencia_tiro,verdadero/falso,El pase terminó en tiro,False,0.0
+eventos_pases,asistencia_gol,verdadero/falso,El pase terminó en gol,False,0.0
+eventos_pases,patron_juego,texto,"Cómo empezó la jugada (juego abierto, córner, falta, contragolpe...)",From Kick Off,0.0
+eventos_tiros,match_id,numérico,ID del partido,3857254,0.0
+eventos_tiros,periodo,numérico,"1 y 2 = tiempos regulares, 3 y 4 = prórroga (la tanda de penales no se incluye)",1,0.0
+eventos_tiros,minuto,numérico,Minuto del partido (reloj corrido),2,0.0
+eventos_tiros,segundo,numérico,Segundo dentro del minuto,2,0.0
+eventos_tiros,tramo,texto,Bloque de 15 minutos; 75-90+ incluye el descuento,00-15,0.0
+eventos_tiros,equipo,texto,Equipo que hace la acción,Tunisia,0.0
+eventos_tiros,rival,texto,Equipo rival,Denmark,0.0
+eventos_tiros,marcador_equipo,numérico,Goles del equipo justo antes de la acción,0,0.0
+eventos_tiros,marcador_rival,numérico,Goles del rival justo antes de la acción,0,0.0
+eventos_tiros,estado_marcador,texto,"Ganando, Empatando o Perdiendo en ese momento (desde la óptica del equipo)",Empatando,0.0
+eventos_tiros,jugador,texto,Jugador que hace la acción,Youssef Msakni,0.0
+eventos_tiros,jugador_id,numérico,ID del jugador (une con las tablas de jugadores),23910,0.0
+eventos_tiros,posicion,texto,Posición en la que jugaba en ese momento,Left Wing,0.0
+eventos_tiros,x,numérico,"Posición horizontal en la cancha, 0 a 120 (0 = su propia portería, 120 = portería rival)",92.6,0.0
+eventos_tiros,y,numérico,"Posición vertical, 0 a 80 (0 = banda izquierda vista desde su portería)",52.0,0.0
+eventos_tiros,bajo_presion,verdadero/falso,Verdadero si el rival lo presionaba,False,0.0
+eventos_tiros,xg,numérico,Goles esperados: probabilidad sumada de que sus tiros fueran gol,0.0238,0.0
+eventos_tiros,resultado,texto,Resultado de la acción,Blocked,0.0
+eventos_tiros,gol,verdadero/falso,Verdadero si fue gol,False,0.0
+eventos_tiros,parte_cuerpo,texto,Parte del cuerpo,Right Foot,0.0
+eventos_tiros,tecnica,texto,Técnica del tiro,Normal,0.0
+eventos_tiros,tipo_tiro,texto,"Juego abierto, penal, tiro libre, córner",Open Play,0.0
+eventos_tiros,x_fin,numérico,"Dónde termina el balón (eje x, 0 a 120)",101.1,0.0
+eventos_tiros,y_fin,numérico,"Dónde termina el balón (eje y, 0 a 80)",47.5,0.0
+eventos_tiros,patron_juego,texto,"Cómo empezó la jugada (juego abierto, córner, falta, contragolpe...)",From Goal Kick,0.0
+eventos_acciones,match_id,numérico,ID del partido,3857254,0.0
+eventos_acciones,periodo,numérico,"1 y 2 = tiempos regulares, 3 y 4 = prórroga (la tanda de penales no se incluye)",1,0.0
+eventos_acciones,minuto,numérico,Minuto del partido (reloj corrido),0,0.0
+eventos_acciones,segundo,numérico,Segundo dentro del minuto,0,0.0
+eventos_acciones,tramo,texto,Bloque de 15 minutos; 75-90+ incluye el descuento,00-15,0.0
+eventos_acciones,equipo,texto,Equipo que hace la acción,Denmark,0.0
+eventos_acciones,rival,texto,Equipo rival,Tunisia,0.0
+eventos_acciones,marcador_equipo,numérico,Goles del equipo justo antes de la acción,0,0.0
+eventos_acciones,marcador_rival,numérico,Goles del rival justo antes de la acción,0,0.0
+eventos_acciones,estado_marcador,texto,"Ganando, Empatando o Perdiendo en ese momento (desde la óptica del equipo)",Empatando,0.0
+eventos_acciones,jugador,texto,Jugador que hace la acción,Kasper Dolberg,0.0
+eventos_acciones,jugador_id,numérico,ID del jugador (une con las tablas de jugadores),6302,0.0
+eventos_acciones,posicion,texto,Posición en la que jugaba en ese momento,Left Center Forward,0.0
+eventos_acciones,x,numérico,"Posición horizontal en la cancha, 0 a 120 (0 = su propia portería, 120 = portería rival)",60.0,0.0
+eventos_acciones,y,numérico,"Posición vertical, 0 a 80 (0 = banda izquierda vista desde su portería)",40.0,0.0
+eventos_acciones,bajo_presion,verdadero/falso,Verdadero si el rival lo presionaba,False,0.0
+eventos_acciones,accion,texto,Tipo de acción con ubicación (para mapas de calor),Pass,0.0
