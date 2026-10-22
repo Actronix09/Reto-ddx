@@ -1,0 +1,4 @@
+# Datos del reto: no se versionan (hay que borrarlos antes del 31 oct 2026)
+RETO_ddx_MINUTO_90_*/
+*.db
+__pycache__/

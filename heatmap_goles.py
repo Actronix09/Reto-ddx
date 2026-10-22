@@ -1,28 +1,28 @@
 """
-Mapa de calor de goles de un partido.
+Mapa de calor de goles de un partido del Mundial Qatar 2022 (RETO d/dx · MINUTO 90).
 
-Lee las coordenadas de los goles (o tiros) desde una base de datos y dibuja
-un mapa de calor sobre una cancha de fútbol con matplotlib.
+Lee los tiros de la tabla `eventos_tiros` de la base SQLite y dibuja un mapa
+de calor sobre la cancha con matplotlib.
 
-Como todavía no tenemos el esquema real de la base de datos, todo lo que
-depende de él está concentrado en la sección CONFIGURACIÓN: la consulta SQL,
-el nombre de las columnas y el sistema de coordenadas. Cuando llegue la base,
-solo hay que ajustar esa sección.
+Las coordenadas vienen de StatsBomb: cancha de 120 x 80, todos los eventos
+orientados hacia el ataque del equipo que los hace (x = 120 es la portería
+rival, y = 0 la banda izquierda vista desde su propia portería).
 
 Uso:
-    # Probar con datos inventados (crea demo.db)
-    python heatmap_goles.py --demo
+    python heatmap_goles.py --listar                     # ids de los 64 partidos
+    python heatmap_goles.py --partido 3869685            # la final
+    python heatmap_goles.py --partido 3869685 --por-equipo --modo zonas
+    python heatmap_goles.py --partido 3869685 --tiros    # todos los tiros, no solo goles
+    python heatmap_goles.py                              # todos los goles del torneo
 
-    # Con la base real
-    python heatmap_goles.py --db "sqlite:///partidos.db" --partido 123
-    python heatmap_goles.py --db "postgresql://user:pass@host/db" --partido 123 --modo zonas
+Datos: StatsBomb Open Data.
 """
 
 from __future__ import annotations
 
 import argparse
 import sqlite3
-from dataclasses import dataclass
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,39 +30,10 @@ import pandas as pd
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Arc, Circle, Rectangle
 
-# ---------------------------------------------------------------------------
-# CONFIGURACIÓN (ajustar cuando tengamos la base de datos real)
-# ---------------------------------------------------------------------------
+RUTA_DB = Path(__file__).parent / "RETO_ddx_MINUTO_90_completo" / "sql" / "minuto_90.sqlite"
 
-# Consulta que devuelve un renglón por gol. ":partido" se sustituye por el id.
-CONSULTA = """
-    SELECT x, y, equipo, minuto, jugador
-    FROM eventos
-    WHERE partido_id = :partido
-      AND tipo = 'gol'
-"""
-
-# Nombre de las columnas en el resultado de la consulta -> nombre interno.
-COLUMNAS = {
-    "x": "x",
-    "y": "y",
-    "equipo": "equipo",
-    "minuto": "minuto",
-    "jugador": "jugador",
-}
-
-# Tamaño del sistema de coordenadas que usa la base de datos:
-#   Opta / porcentaje -> (100, 100)
-#   StatsBomb         -> (120, 80)
-#   Metros            -> (105, 68)
-ESCALA_ORIGEN = (100, 100)
-
-# Si en la base el eje Y crece hacia abajo (común en proveedores de datos),
-# lo invertimos para dibujar con el origen abajo a la izquierda.
-INVERTIR_Y = False
-
-# Dimensiones de la cancha con la que dibujamos (metros, FIFA estándar).
-LARGO, ANCHO = 105.0, 68.0
+# Cancha StatsBomb (unidades = yardas)
+LARGO, ANCHO = 120.0, 80.0
 
 # Rampa secuencial de un solo tono (azul claro -> oscuro).
 RAMPA = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#184f95", "#0d366b"]
@@ -71,41 +42,46 @@ LINEAS = "#b5b3ad"
 TEXTO = "#2b2a27"
 TEXTO_SECUNDARIO = "#6b6963"
 
+# Más goles que esto y ya no se escribe el minuto junto a cada uno
+MAX_ETIQUETAS = 15
+
 
 # ---------------------------------------------------------------------------
 # Datos
 # ---------------------------------------------------------------------------
 
-def cargar_goles(url_db: str, partido: int | str) -> pd.DataFrame:
-    """Ejecuta CONSULTA y regresa un DataFrame con columnas internas y coordenadas en metros."""
-    if url_db.startswith("sqlite:///"):
-        # SQLite no necesita SQLAlchemy.
-        with sqlite3.connect(url_db.removeprefix("sqlite:///")) as conn:
-            df = pd.read_sql_query(CONSULTA, conn, params={"partido": partido})
-    else:
-        from sqlalchemy import create_engine, text
-
-        engine = create_engine(url_db)
-        with engine.connect() as conn:
-            df = pd.read_sql_query(text(CONSULTA), conn, params={"partido": partido})
-
-    df = df.rename(columns={origen: interno for interno, origen in COLUMNAS.items()})
-    faltantes = {"x", "y"} - set(df.columns)
-    if faltantes:
-        raise ValueError(f"La consulta no regresó las columnas {faltantes}; revisa COLUMNAS.")
-
-    return a_metros(df)
+def cargar_partido(conn: sqlite3.Connection, partido: int) -> pd.Series:
+    df = pd.read_sql_query("SELECT * FROM partidos WHERE match_id = ?", conn, params=(partido,))
+    if df.empty:
+        raise SystemExit(f"No existe el partido {partido}. Usa --listar para ver los ids.")
+    return df.iloc[0]
 
 
-def a_metros(df: pd.DataFrame) -> pd.DataFrame:
-    """Convierte las coordenadas del proveedor a metros sobre una cancha de LARGO x ANCHO."""
-    df = df.dropna(subset=["x", "y"]).copy()
-    largo_origen, ancho_origen = ESCALA_ORIGEN
-    df["x"] = df["x"].astype(float) / largo_origen * LARGO
-    df["y"] = df["y"].astype(float) / ancho_origen * ANCHO
-    if INVERTIR_Y:
-        df["y"] = ANCHO - df["y"]
+def cargar_tiros(conn: sqlite3.Connection, partido: int | None, solo_goles: bool) -> pd.DataFrame:
+    """Tiros (o solo goles) de un partido, o de todo el torneo si `partido` es None."""
+    consulta = "SELECT match_id, minuto, equipo, rival, jugador, x, y, xg, gol, tipo_tiro FROM eventos_tiros WHERE 1=1"
+    params: list = []
+    if partido is not None:
+        consulta += " AND match_id = ?"
+        params.append(partido)
+    if solo_goles:
+        consulta += " AND gol = 1"
+
+    df = pd.read_sql_query(consulta, conn, params=params).dropna(subset=["x", "y"])
+    # StatsBomb tiene el eje Y hacia abajo; lo invertimos para que la banda
+    # izquierda del atacante quede arriba al dibujar hacia la derecha.
+    df["y"] = ANCHO - df["y"]
     return df
+
+
+def listar_partidos(conn: sqlite3.Connection) -> None:
+    df = pd.read_sql_query(
+        """SELECT match_id, substr(game_date, 1, 10) AS fecha, competition_stage AS fase,
+                  home_team || ' ' || home_score || '-' || away_score || ' ' || away_team AS partido
+           FROM partidos ORDER BY game_date""",
+        conn,
+    )
+    print(df.to_string(index=False))
 
 
 # ---------------------------------------------------------------------------
@@ -115,7 +91,7 @@ def a_metros(df: pd.DataFrame) -> pd.DataFrame:
 def densidad_kde(x: np.ndarray, y: np.ndarray, resolucion: float = 0.5, sigma: float = 6.0):
     """Densidad suavizada con kernel gaussiano (sin depender de scipy).
 
-    sigma está en metros: más grande = manchas más anchas. Con pocos goles
+    sigma está en yardas: más grande = manchas más anchas. Con pocos goles
     (lo normal en un partido) conviene un sigma generoso.
     """
     gx = np.arange(0, LARGO + resolucion, resolucion)
@@ -128,7 +104,7 @@ def densidad_kde(x: np.ndarray, y: np.ndarray, resolucion: float = 0.5, sigma: f
 
 
 def densidad_zonas(x: np.ndarray, y: np.ndarray, bins=(12, 8)):
-    """Conteo de goles por zona rectangular de la cancha."""
+    """Conteo por zona rectangular de la cancha (por defecto, cuadros de 10 x 10)."""
     conteo, bordes_x, bordes_y = np.histogram2d(x, y, bins=bins, range=[[0, LARGO], [0, ANCHO]])
     return bordes_x, bordes_y, conteo.T
 
@@ -138,24 +114,25 @@ def densidad_zonas(x: np.ndarray, y: np.ndarray, bins=(12, 8)):
 # ---------------------------------------------------------------------------
 
 def dibujar_cancha(ax: plt.Axes) -> None:
-    """Dibuja las líneas de una cancha de LARGO x ANCHO metros."""
+    """Dibuja las líneas de una cancha StatsBomb de 120 x 80."""
     estilo = dict(color=LINEAS, linewidth=1.2, fill=False, zorder=3)
+    medio = ANCHO / 2
     ax.add_patch(Rectangle((0, 0), LARGO, ANCHO, **estilo))
     ax.plot([LARGO / 2] * 2, [0, ANCHO], color=LINEAS, linewidth=1.2, zorder=3)
-    ax.add_patch(Circle((LARGO / 2, ANCHO / 2), 9.15, **estilo))
-    ax.add_patch(Circle((LARGO / 2, ANCHO / 2), 0.4, color=LINEAS, zorder=3))
+    ax.add_patch(Circle((LARGO / 2, medio), 10, **estilo))
+    ax.add_patch(Circle((LARGO / 2, medio), 0.4, color=LINEAS, zorder=3))
 
     for lado in (0, LARGO):
         sentido = 1 if lado == 0 else -1
         # Área grande, área chica y portería
-        ax.add_patch(Rectangle((lado, ANCHO / 2 - 20.16), sentido * 16.5, 40.32, **estilo))
-        ax.add_patch(Rectangle((lado, ANCHO / 2 - 9.16), sentido * 5.5, 18.32, **estilo))
-        ax.add_patch(Rectangle((lado, ANCHO / 2 - 3.66), -sentido * 1.5, 7.32, **estilo))
+        ax.add_patch(Rectangle((lado, medio - 22), sentido * 18, 44, **estilo))
+        ax.add_patch(Rectangle((lado, medio - 10), sentido * 6, 20, **estilo))
+        ax.add_patch(Rectangle((lado, medio - 4), -sentido * 1.5, 8, **estilo))
         # Punto penal y media luna
-        penal = lado + sentido * 11
-        ax.add_patch(Circle((penal, ANCHO / 2), 0.4, color=LINEAS, zorder=3))
+        penal = lado + sentido * 12
+        ax.add_patch(Circle((penal, medio), 0.4, color=LINEAS, zorder=3))
         angulo = 0 if lado == 0 else 180
-        ax.add_patch(Arc((penal, ANCHO / 2), 18.3, 18.3, angle=angulo,
+        ax.add_patch(Arc((penal, medio), 20, 20, angle=angulo,
                          theta1=-53, theta2=53, color=LINEAS, linewidth=1.2, zorder=3))
 
     ax.set_xlim(-3, LARGO + 3)
@@ -165,7 +142,11 @@ def dibujar_cancha(ax: plt.Axes) -> None:
 
 
 def mapa_de_calor(df: pd.DataFrame, titulo: str, modo: str = "kde", ax: plt.Axes | None = None):
-    """Dibuja el mapa de calor de los goles de `df` sobre una cancha."""
+    """Dibuja el mapa de calor de los tiros de `df` sobre una cancha.
+
+    La densidad se calcula con todas las filas de `df`; los goles (gol = 1)
+    se marcan encima en negro y el resto de los tiros como círculos huecos.
+    """
     if ax is None:
         _, ax = plt.subplots(figsize=(11, 7.5))
     fig = ax.figure
@@ -173,9 +154,11 @@ def mapa_de_calor(df: pd.DataFrame, titulo: str, modo: str = "kde", ax: plt.Axes
     ax.set_facecolor(SUPERFICIE)
 
     cmap = LinearSegmentedColormap.from_list("goles", RAMPA)
-    cmap.set_under(alpha=0)  # las zonas sin goles dejan ver la cancha
+    cmap.set_under(alpha=0)  # las zonas vacías dejan ver la cancha
 
     x, y = df["x"].to_numpy(), df["y"].to_numpy()
+    solo_goles = bool(df["gol"].all())
+    unidad = "goles" if solo_goles else "tiros"
 
     if len(df) == 0:
         ax.text(LARGO / 2, ANCHO / 2, "Sin goles registrados", ha="center", va="center",
@@ -184,7 +167,7 @@ def mapa_de_calor(df: pd.DataFrame, titulo: str, modo: str = "kde", ax: plt.Axes
         bx, by, conteo = densidad_zonas(x, y)
         malla = ax.pcolormesh(bx, by, conteo, cmap=cmap, vmin=0.5, vmax=max(conteo.max(), 1),
                               edgecolors=SUPERFICIE, linewidth=2, zorder=1)
-        # Número solo en las zonas con goles
+        # Número solo en las zonas con algo
         for i in range(conteo.shape[0]):
             for j in range(conteo.shape[1]):
                 if conteo[i, j] > 0:
@@ -193,95 +176,124 @@ def mapa_de_calor(df: pd.DataFrame, titulo: str, modo: str = "kde", ax: plt.Axes
                             ha="center", va="center", fontsize=11, zorder=5,
                             color="white" if oscuro else TEXTO)
         barra = fig.colorbar(malla, ax=ax, shrink=0.6, pad=0.02)
-        barra.set_label("Goles por zona", color=TEXTO_SECUNDARIO)
-        barra.set_ticks(range(1, int(max(conteo.max(), 1)) + 1))
+        barra.set_label(f"{unidad.capitalize()} por zona", color=TEXTO_SECUNDARIO)
+        maximo = int(max(conteo.max(), 1))
+        barra.set_ticks(np.unique(np.linspace(1, maximo, min(maximo, 6)).round().astype(int)))
     else:
         gx, gy, z = densidad_kde(x, y)
         z = z / z.max()
         malla = ax.pcolormesh(gx, gy, z, cmap=cmap, vmin=0.05, vmax=1, shading="auto", zorder=1)
         barra = fig.colorbar(malla, ax=ax, shrink=0.6, pad=0.02)
-        barra.set_label("Concentración relativa de goles", color=TEXTO_SECUNDARIO)
+        barra.set_label(f"Concentración relativa de {unidad}", color=TEXTO_SECUNDARIO)
         barra.set_ticks([0.05, 1])
         barra.set_ticklabels(["Baja", "Alta"])
 
     dibujar_cancha(ax)
 
-    # Ubicación exacta de cada gol encima del mapa (en zonas ya se ve el conteo)
+    # Ubicación exacta de cada tiro encima del mapa (en zonas ya se ve el conteo)
     if len(df) and modo == "kde":
-        ax.scatter(x, y, s=70, color=TEXTO, edgecolors=SUPERFICIE, linewidths=2, zorder=6)
-        if "minuto" in df.columns:
-            for _, gol in df.iterrows():
-                ax.annotate(f"{int(gol['minuto'])}'", (gol["x"], gol["y"]), xytext=(6, 6),
+        fallados = df[df["gol"] == 0]
+        ax.scatter(fallados["x"], fallados["y"], s=36, facecolors="none", edgecolors=TEXTO_SECUNDARIO,
+                   linewidths=1, zorder=5, label="Tiro")
+        goles = df[df["gol"] == 1]
+        ax.scatter(goles["x"], goles["y"], s=70, color=TEXTO, edgecolors=SUPERFICIE,
+                   linewidths=2, zorder=6, label="Gol")
+        if len(goles) <= MAX_ETIQUETAS:
+            # Goles desde el mismo punto (p. ej. penales) comparten una sola etiqueta
+            for (x0, y0), grupo in goles.groupby([goles["x"].round(), goles["y"].round()]):
+                minutos = ", ".join(f"{m}'" for m in sorted(grupo["minuto"].astype(int)))
+                ax.annotate(minutos, (x0, y0), xytext=(6, 6),
                             textcoords="offset points", fontsize=9, color=TEXTO, zorder=7)
+        if not solo_goles:
+            ax.legend(loc="upper left", bbox_to_anchor=(0, 0), ncol=2, frameon=False,
+                      labelcolor=TEXTO_SECUNDARIO)
 
     ax.set_title(titulo, color=TEXTO, fontsize=15, loc="left", pad=12)
     return fig, ax
 
 
-def graficar_partido(df: pd.DataFrame, partido, modo: str, por_equipo: bool, salida: str | None):
-    """Una figura con todos los goles, o un panel por equipo si `por_equipo`."""
-    if por_equipo and "equipo" in df.columns and df["equipo"].nunique() > 1:
-        equipos = sorted(df["equipo"].dropna().unique())
-        fig, ejes = plt.subplots(len(equipos), 1, figsize=(11, 7 * len(equipos)))
-        for ax, equipo in zip(ejes, equipos):
-            goles = df[df["equipo"] == equipo]
-            mapa_de_calor(goles, f"{equipo} · {len(goles)} goles", modo, ax)
-    else:
-        fig, _ = mapa_de_calor(df, f"Partido {partido} · {len(df)} goles", modo)
-
-    fig.tight_layout()
-    if salida:
-        fig.savefig(salida, dpi=150, facecolor=SUPERFICIE)
-        print(f"Mapa guardado en {salida}")
-    else:
-        plt.show()
+def reflejar(df: pd.DataFrame) -> pd.DataFrame:
+    """Gira 180° las coordenadas para que el equipo ataque hacia la izquierda."""
+    df = df.copy()
+    df["x"] = LARGO - df["x"]
+    df["y"] = ANCHO - df["y"]
+    return df
 
 
-# ---------------------------------------------------------------------------
-# Datos de prueba
-# ---------------------------------------------------------------------------
+def titulo_partido(info: pd.Series, unidad: str, n: int) -> str:
+    return (f"{info['home_team']} {info['home_score']}-{info['away_score']} {info['away_team']}"
+            f" · {info['competition_stage']} · {n} {unidad}")
 
-def crear_db_demo(ruta: str = "demo.db") -> str:
-    """Crea una base SQLite con goles inventados para probar el script."""
-    rng = np.random.default_rng(7)
-    filas = []
-    for equipo, n in (("Local", 4), ("Visitante", 3)):
-        # Coordenadas en escala 0-100, atacando hacia la derecha, cerca del área
-        xs = rng.normal(88, 5, n).clip(70, 99)
-        ys = rng.normal(50, 12, n).clip(20, 80)
-        minutos = sorted(rng.integers(1, 91, n))
-        filas += [(1, "gol", float(x), float(y), equipo, int(m), f"Jugador {i + 1}")
-                  for i, (x, y, m) in enumerate(zip(xs, ys, minutos))]
 
-    with sqlite3.connect(ruta) as conn:
-        conn.execute("DROP TABLE IF EXISTS eventos")
-        conn.execute("""CREATE TABLE eventos (
-            partido_id INTEGER, tipo TEXT, x REAL, y REAL,
-            equipo TEXT, minuto INTEGER, jugador TEXT)""")
-        conn.executemany("INSERT INTO eventos VALUES (?, ?, ?, ?, ?, ?, ?)", filas)
-    return f"sqlite:///{ruta}"
+def graficar_partido(df: pd.DataFrame, info: pd.Series, modo: str, por_equipo: bool):
+    """Un panel por equipo (ambos atacando a la derecha) o los dos en la misma cancha."""
+    unidad = "goles" if df["gol"].all() else "tiros"
+    local, visitante = info["home_team"], info["away_team"]
+
+    if por_equipo:
+        fig, ejes = plt.subplots(2, 1, figsize=(11, 14))
+        for ax, equipo in zip(ejes, (local, visitante)):
+            datos = df[df["equipo"] == equipo]
+            mapa_de_calor(datos, f"{equipo} · {len(datos)} {unidad} · ataca →", modo, ax)
+        fig.suptitle(titulo_partido(info, unidad, len(df)), color=TEXTO, fontsize=17, x=0.02, ha="left")
+        return fig
+
+    # Misma cancha: el local ataca a la derecha y el visitante a la izquierda
+    datos = pd.concat([df[df["equipo"] == local], reflejar(df[df["equipo"] == visitante])])
+    fig, ax = mapa_de_calor(datos, titulo_partido(info, unidad, len(df)), modo)
+    ax.text(LARGO, -2, f"{local} ataca →", ha="right", va="top", color=TEXTO_SECUNDARIO, fontsize=10)
+    ax.text(0, -2, f"← {visitante} ataca", ha="left", va="top", color=TEXTO_SECUNDARIO, fontsize=10)
+    return fig
+
+
+def avisar_autogoles(df: pd.DataFrame, info: pd.Series) -> None:
+    """Los autogoles no son tiros, así que no aparecen en eventos_tiros."""
+    marcador = int(info["home_score"]) + int(info["away_score"])
+    if int(df["gol"].sum()) < marcador:
+        print(f"Aviso: el marcador suma {marcador} goles pero hay {int(df['gol'].sum())} en "
+              "eventos_tiros; la diferencia son autogoles, que no tienen tiro.")
 
 
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Mapa de calor de goles de un partido")
-    parser.add_argument("--db", help="URL de la base, p. ej. sqlite:///partidos.db o postgresql://...")
-    parser.add_argument("--partido", default=1, help="Id del partido")
+    parser = argparse.ArgumentParser(description="Mapa de calor de goles (Mundial Qatar 2022)")
+    parser.add_argument("--db", default=RUTA_DB, type=Path, help="Ruta a minuto_90.sqlite")
+    parser.add_argument("--partido", type=int, help="match_id; si se omite, todo el torneo")
+    parser.add_argument("--listar", action="store_true", help="Muestra los partidos y sus ids")
     parser.add_argument("--modo", choices=["kde", "zonas"], default="kde",
                         help="kde = mancha suavizada, zonas = conteo por cuadrícula")
     parser.add_argument("--por-equipo", action="store_true", help="Un mapa por cada equipo")
+    parser.add_argument("--tiros", action="store_true", help="Incluir todos los tiros, no solo goles")
     parser.add_argument("--salida", help="Archivo de imagen (png/svg/pdf). Si se omite, abre una ventana")
-    parser.add_argument("--demo", action="store_true", help="Usar una base de prueba con datos inventados")
     args = parser.parse_args()
 
-    if args.demo:
-        args.db = crear_db_demo()
-    if not args.db:
-        parser.error("indica --db o usa --demo")
+    if not args.db.exists():
+        parser.error(f"No encuentro la base en {args.db}")
 
-    df = cargar_goles(args.db, args.partido)
-    graficar_partido(df, args.partido, args.modo, args.por_equipo, args.salida)
+    with sqlite3.connect(args.db) as conn:
+        if args.listar:
+            listar_partidos(conn)
+            return
+
+        df = cargar_tiros(conn, args.partido, solo_goles=not args.tiros)
+        if args.partido is None:
+            unidad = "tiros" if args.tiros else "goles"
+            fig, _ = mapa_de_calor(df, f"Mundial Qatar 2022 · {len(df)} {unidad}", args.modo)
+        else:
+            info = cargar_partido(conn, args.partido)
+            avisar_autogoles(df, info)
+            fig = graficar_partido(df, info, args.modo, args.por_equipo)
+
+    fig.text(0.99, 0.01, "Datos: StatsBomb Open Data", ha="right", va="bottom",
+             color=TEXTO_SECUNDARIO, fontsize=8)
+    # Reservar espacio arriba para el título general de la vista por equipo
+    fig.tight_layout(rect=(0, 0, 1, 0.97 if fig.get_suptitle() else 1))
+    if args.salida:
+        fig.savefig(args.salida, dpi=150, facecolor=SUPERFICIE)
+        print(f"Mapa guardado en {args.salida}")
+    else:
+        plt.show()
 
 
 if __name__ == "__main__":
