@@ -2,3 +2,11 @@
 RETO_ddx_MINUTO_90_*/
 *.db
 __pycache__/
+
+# Archivos auxiliares de LaTeX
+reporte/*.aux
+reporte/*.log
+reporte/*.toc
+reporte/*.out
+reporte/*.fls
+reporte/*.fdb_latexmk

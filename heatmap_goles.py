@@ -182,7 +182,9 @@ def mapa_de_calor(df: pd.DataFrame, titulo: str, modo: str = "kde", ax: plt.Axes
     else:
         gx, gy, z = densidad_kde(x, y)
         z = z / z.max()
-        malla = ax.pcolormesh(gx, gy, z, cmap=cmap, vmin=0.05, vmax=1, shading="auto", zorder=1)
+        # rasterized evita las líneas de costura entre celdas al guardar en PDF/SVG
+        malla = ax.pcolormesh(gx, gy, z, cmap=cmap, vmin=0.05, vmax=1, shading="auto", zorder=1,
+                              rasterized=True)
         barra = fig.colorbar(malla, ax=ax, shrink=0.6, pad=0.02)
         barra.set_label(f"Concentración relativa de {unidad}", color=TEXTO_SECUNDARIO)
         barra.set_ticks([0.05, 1])
@@ -193,7 +195,8 @@ def mapa_de_calor(df: pd.DataFrame, titulo: str, modo: str = "kde", ax: plt.Axes
     # Ubicación exacta de cada tiro encima del mapa (en zonas ya se ve el conteo)
     if len(df) and modo == "kde":
         fallados = df[df["gol"] == 0]
-        ax.scatter(fallados["x"], fallados["y"], s=36, facecolors="none", edgecolors=TEXTO_SECUNDARIO,
+        # Relleno claro para que se vean también sobre el azul oscuro
+        ax.scatter(fallados["x"], fallados["y"], s=36, facecolors=SUPERFICIE, edgecolors=TEXTO_SECUNDARIO,
                    linewidths=1, zorder=5, label="Tiro")
         goles = df[df["gol"] == 1]
         ax.scatter(goles["x"], goles["y"], s=70, color=TEXTO, edgecolors=SUPERFICIE,

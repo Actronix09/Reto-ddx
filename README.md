@@ -3,6 +3,8 @@
 Script en Python que dibuja un mapa de calor de los goles (o de todos los tiros) de un
 partido del Mundial Qatar 2022, sobre una cancha de fútbol, usando matplotlib.
 
+[Reporte del Proyecto](<./reporte/reporte.pdf>)
+
 ## Instalación
 
 Se necesita Python 3.10 o más reciente.
@@ -63,7 +65,7 @@ python heatmap_goles.py --partido 3869685 --salida final.png
 | `--modo kde` | *(por defecto)* Mancha suavizada; marca cada gol con el minuto en que se anotó. |
 | `--modo zonas` | Divide la cancha en cuadros de 10 × 10 y muestra cuántos goles hubo en cada uno. |
 | `--por-equipo` | Dos paneles, uno por selección, ambos atacando hacia la derecha. |
-| `--tiros` | Usa todos los tiros, no solo los goles. Los goles van en negro y los demás tiros como círculos huecos. |
+| `--tiros` | Usa todos los tiros, no solo los goles. Los goles van en negro y los demás tiros como círculos claros. |
 | `--salida ARCHIVO` | Guarda la imagen en ese archivo. Sin esta opción se abre una ventana. |
 | `--db RUTA` | Ruta a `minuto_90.sqlite`, si no está en la ubicación por defecto. |
 
